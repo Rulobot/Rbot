@@ -2,179 +2,98 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Control de Video por Voz</title>
+  <title>Formulario de Contacto</title>
   <style>
     body {
-      background-color: black;
+      background-color: #add8e6;
       font-family: Arial, sans-serif;
       text-align: center;
-      margin: 0;
+    }
+    .logo {
+      margin-top: 20px;
+    }
+    h1 {
+      text-decoration: underline;
+      text-decoration-color: yellow;
+      color: #333;
+    }
+    .formulario {
+      background: white;
+      width: 400px;
+      margin: 20px auto;
       padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+      text-align: left;
     }
-    #escuchar {
-      background-color: #28a745;
-      color: white;
-      padding: 5px 130px;
-      font-size: 14px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
     }
-    #videoContainer {
-      margin: 0 auto 5px;
-      background-color: black;
-      padding: 10px;
-      border-radius: 10px;
-      width: 640px;
-      margin-bottom: 1px;
-      margin-top: 1px;
-
-    }
-    video {
+    input, textarea {
       width: 100%;
-      max-width: 320px; /* antes: 640px */
-      border-radius: 10px;
-    }
-    .button-grid {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 1px;
+      padding: 8px;
       margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
-    .video-btn {
-      width: 100px;
-      height: 50px;
-      font-size: 16px;
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
       border: none;
-      background-color: #007bff;
+      border-radius: 10px;
+      background-color: #007BFF;
       color: white;
-      border-radius: 6px;
       cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-
-  <button id="escuchar">Escuchar</button>
-
-  <div id="videoContainer">
-    <video id="miVideo" src="Vid4.mp4"></video>
+  <div class="logo">
+    <img src="logo.png" alt="Logotipo" width="120">
   </div>
-
-  <!-- Fila 1 -->
-  <div class="button-grid">
-    <button class="video-btn" onclick="playSegment(0.0, 3.2)">Saludo</button>
-    <button class="video-btn" onclick="playSegment(4.2, 5.4)">Nombre</button>
-    <button class="video-btn" onclick="playSegment(5.6, 8.0)">Orígen</button>
-  </div>
-
-  <!-- Fila 2 -->
-  <div class="button-grid">
-    <button class="video-btn" onclick="playSegment(8.3, 16.0)">Oferta</button>
-    <button class="video-btn" onclick="playSegment(16.4, 25.0)">Oferta</button>
-    <button class="video-btn" onclick="playSegment(25.5, 29.5)">Oferta</button>
-  </div>
-
-  <!-- Fila 3 -->
-  <div class="button-grid">
-    <button class="video-btn" onclick="playSegment(29.6, 35.7)">Oferta</button>
-    <button class="video-btn" onclick="playSegment(29.6, 35.7)">Oferta</button>
-    <button class="video-btn" onclick="playSegment(37.8, 39.5)">Adiós</button>
+  <h1>Formulario de Contacto</h1>
+  
+  <div class="formulario">
+    <form id="contact-form">
+      <label for="nombre">Nombre:</label>
+      <input type="text" name="nombre" required>
+      
+      <label for="correo">Correo:</label>
+      <input type="email" name="correo" required>
+      
+      <label for="telefono">Teléfono:</label>
+      <input type="text" name="telefono" required>
+      
+      <label for="comentarios">Comentarios:</label>
+      <textarea name="comentarios" rows="4" required></textarea>
+      
+      <button type="submit">Enviar</button>
+    </form>
+    <p id="mensaje"></p>
   </div>
 
   <script>
-    const video = document.getElementById('miVideo');
-    let playingSegment = false;
-    let segmentEnd = 0;
+    const scriptURL = "PEGAR_AQUI_URL_DEL_SCRIPT"; // <-- tu URL del Apps Script
 
-    // Diccionario de frases agrupadas
-    const comandos = [
-      { frases: ["hola", "que tal", "holi", "hola como estas"],
-        inicio: 0.0,
-        fin: 3.2
-      },
-      { frases: ["cómo te llamas", "cuál es tu nombre"],
-        inicio: 4.2,
-        fin: 5.4
-      },
-      { frases: ["de dónde eres", "dónde naciste"],
-        inicio: 5.6,
-        fin: 8.0
-      },
-      { frases: ["qué haces", "qué vendes", "qué informas", "qué más haces", "qué otra cosa haces", "qué más vendes", "qué más vendes", "qué ofreces"],
-        inicio: 8.3,
-        fin: 16.0
-      },
-      { frases: ["gracias", "te agradezco", "agradecido"],
-        inicio: 35.9,
-        fin: 37.7
-      },
-      { frases: ["adiós", "hasta luego", "nos vemos", "luego la vez", "chao", "arrivederchi"],
-        inicio: 37.8,
-        fin: 39.5
-      }
-    ];
+    document.getElementById("contact-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
 
-    video.addEventListener('loadedmetadata', () => {
-      video.currentTime = 0;
-    });
-
-    video.addEventListener('canplay', () => {
-      video.play();
-    });
-
-    video.addEventListener('timeupdate', () => {
-      if (!playingSegment && video.currentTime > 0.5) {
-        video.pause();
-      }
-      if (playingSegment && video.currentTime >= segmentEnd) {
-        video.pause();
-        playingSegment = false;
-      }
-    });
-
-    function playSegment(start, end) {
-      playingSegment = true;
-      segmentEnd = end;
-      video.currentTime = start;
-      video.play();
-    }
-
-    // Reconocimiento de voz
-    document.getElementById("escuchar").addEventListener("click", () => {
-      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      reconocimiento.lang = "es-MX";
-      reconocimiento.interimResults = false;
-      reconocimiento.maxAlternatives = 1;
-
-      reconocimiento.start();
-
-      reconocimiento.onresult = (event) => {
-        const texto = event.results[0][0].transcript.toLowerCase().trim();
-        console.log("Texto reconocido:", texto);
-
-        let encontrado = false;
-
-        for (let comando of comandos) {
-          if (comando.frases.includes(texto)) {
-            playSegment(comando.inicio, comando.fin);
-            encontrado = true;
-            break;
-          }
-        }
-
-        if (!encontrado) {
-          alert("No se reconoció la frase: " + texto);
-        }
-      };
-
-      reconocimiento.onerror = (event) => {
-        alert("Error al reconocer la voz: " + event.error);
-      };
+      fetch(scriptURL, { method: "POST", body: formData })
+        .then(response => {
+          document.getElementById("mensaje").innerText = "✅ Enviado correctamente.";
+          e.target.reset();
+        })
+        .catch(error => {
+          document.getElementById("mensaje").innerText = "❌ Error al enviar.";
+          console.error("Error:", error);
+        });
     });
   </script>
-
 </body>
 </html>
